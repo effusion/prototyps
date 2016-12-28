@@ -1,13 +1,12 @@
 package ch.andreas.thesis.mysql.controller;
 
 import ch.andreas.thesis.mysql.data.Person;
+import ch.andreas.thesis.mysql.json.PersonJson;
 import ch.andreas.thesis.mysql.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +19,25 @@ public class PersonController {
     private PersonRepository personRepository;
 
     @RequestMapping(value = "/findPerson", method = RequestMethod.GET)
-    public List<Person> findPerson(@RequestParam String firstName) {
-        return personRepository.findByFirstName(firstName);
+    public List<PersonJson> findPerson(@RequestParam String firstName) {
+        return convert(personRepository.findByFirstName(firstName));
+    }
+
+    private List<PersonJson> convert(List<Person> byFirstName) {
+        final List<PersonJson> personJsonList = new ArrayList<>();
+        byFirstName.forEach(person -> {
+            PersonJson personJson = new PersonJson(person.getFirstName(),person.getLastName());
+            personJson.setPersonId(person.getId());
+            personJsonList.add(personJson);
+        });
+        return personJsonList;
+    }
+
+    @RequestMapping(value = "/createPerson", method = RequestMethod.POST)
+    public void createPerson(@RequestBody PersonJson personJson){
+        Person person = new Person();
+        person.setFirstName(personJson.getFirstName());
+        person.setLastName(personJson.getLastName());
+        personRepository.save(person);
     }
 }
