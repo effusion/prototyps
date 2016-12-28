@@ -16,7 +16,7 @@ public class Person extends AbstractPersistable<Long>{
     @Version
     private long version;
 
-    private String lastName;
+    private String surName;
 
     private String firstName;
 
@@ -28,12 +28,12 @@ public class Person extends AbstractPersistable<Long>{
         this.version = version;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getSurName() {
+        return surName;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setSurName(String surName) {
+        this.surName = surName;
     }
 
     public String getFirstName() {
