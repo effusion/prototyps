@@ -20,7 +20,7 @@ public class PersonControllerTest {
     @Test
     //@Ignore("for int testing.")
     public void createPerson() throws RestClientException{
-        PersonJson personJson = new PersonJson("Andreas", "Heubeck");
+        PersonJson personJson = new PersonJson("Anita", "Heubeck");
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.set("content-type", "application/json");
         HttpEntity request = new HttpEntity(personJson,requestHeaders);
