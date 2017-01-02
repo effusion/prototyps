@@ -17,7 +17,7 @@ public class Person {
     private String surName;
 
     private String firstName;
-
+    
     private String streetName;
 
     private int houseNumber;
