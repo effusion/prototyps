@@ -1,4 +1,4 @@
-package ch.andreas.thesis.mysql.json;
+package ch.andreas.thesis.rest.json;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

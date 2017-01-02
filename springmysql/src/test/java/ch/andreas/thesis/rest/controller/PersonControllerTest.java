@@ -1,13 +1,12 @@
-package ch.andreas.thesis.mysql.controller;
+package ch.andreas.thesis.rest.controller;
 
-import ch.andreas.thesis.mysql.json.PersonJson;
-import org.junit.Ignore;
+
+import ch.andreas.thesis.rest.json.PersonJson;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Created by heuby on 28.12.16.
@@ -25,6 +24,6 @@ public class PersonControllerTest {
         requestHeaders.set("content-type", "application/json");
         HttpEntity request = new HttpEntity(personJson,requestHeaders);
         ResponseEntity<String> response = restTemplate.exchange("http://localhost:8080/createPerson", HttpMethod.POST, request, String.class);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 }
