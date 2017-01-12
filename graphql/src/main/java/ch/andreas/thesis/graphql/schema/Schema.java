@@ -27,9 +27,6 @@ public class Schema {
         Person person1 = new Person();
         person1.setFirstName("Andreas");
         person1.setLastName("Heubeck");
-        person1.setStreetName("Ackerstrasse");
-        person1.setHouseNumber(44L);
-        person1.setTown("Zürich");
 
         Address addressHome = new Address();
         addressHome.setStreetName("Ackerstrasse");
@@ -52,17 +49,9 @@ public class Schema {
         Person person2 = new Person();
         person2.setFirstName("Anita");
         person2.setLastName("Heubeck");
-        //person2.setStreetName("Riedweg");
-        //person2.setHouseNumber(14L);
-        //person2.setTown("Dübendorf");
-
-        Address address2 = new Address();
-        address2.setStreetName("Riedweg");
-        address2.setHouseNumber(14);
-        address2.setTown("Dübendorf");
-        addressList = new ArrayList<>();
-        addressList.add(address2);
-        person2.setAddresses(addressList);
+        person2.setStreetName("Riedweg");
+        person2.setHouseNumber(14L);
+        person2.setTown("Dübendorf");
 
         personList.add(person2);
     }
@@ -151,7 +140,7 @@ public class Schema {
             )
             .field(newFieldDefinition()
                     .name("Address")
-                    .type(ADDRESS_TYPE)
+                    .type(new GraphQLList(ADDRESS_TYPE))
                     .build()
             )
             .build();
