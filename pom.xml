@@ -23,6 +23,8 @@
     <modules>
         <module>springmysql</module>
         <module>springmongo</module>
+        <module>springconfig</module>
+        <module>graphql</module>
     </modules>
 
     <dependencies>
