@@ -1,18 +1,15 @@
 package ch.andreas.thesis.graphql.schema;
 
-import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLNonNull;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLSchema;
+import graphql.schema.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLInputObjectField.newInputObjectField;
+import static graphql.schema.GraphQLInputObjectType.newInputObject;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLSchema.newSchema;
 
@@ -21,50 +18,24 @@ import static graphql.schema.GraphQLSchema.newSchema;
  */
 public class Schema {
 
-
-    private static List<Person> personList = new ArrayList<>();
-    static {
-        Person person1 = new Person();
-        person1.setFirstName("Andreas");
-        person1.setLastName("Heubeck");
-
-        Address addressHome = new Address();
-        addressHome.setStreetName("Ackerstrasse");
-        addressHome.setHouseNumber(44);
-        addressHome.setTown("Zürich");
-
-        Address addressWork = new Address();
-        addressWork.setStreetName("Hardturmstrasse");
-        addressWork.setHouseNumber(201);
-        addressWork.setTown("Zürich");
+    private static PersonRepository personRepository = new PersonRepository();
 
 
-        List<Address> addressList = new ArrayList<>();
-        addressList.add(addressHome);
-        addressList.add(addressWork);
-        person1.setAddresses(addressList);
-
-        personList.add(person1);
-
-        Person person2 = new Person();
-        person2.setFirstName("Anita");
-        person2.setLastName("Heubeck");
-        person2.setStreetName("Riedweg");
-        person2.setHouseNumber(14L);
-        person2.setTown("Dübendorf");
-
-        personList.add(person2);
+    public GraphQLSchema getSchema(){
+        return newSchema()
+                .query(buildQueryRoot())
+                .mutation(buildMutationRoot())
+                .build();
     }
 
-    public static GraphQLSchema getSchema(){
-
-        GraphQLObjectType queryRoot = newObject()
+    private GraphQLObjectType buildQueryRoot() {
+        return newObject()
                 .name("QueryType")
                 .field(newFieldDefinition()
                         .name("persons")
                         .description("Retuns all persons")
                         .type(new GraphQLList(PERSON_TYPE))
-                        .dataFetcher(env -> personList)
+                        .dataFetcher(env -> personRepository.getPersonList())
                         .build()
                 )
                 .field(newFieldDefinition()
@@ -77,39 +48,32 @@ public class Schema {
                                 .type(new GraphQLNonNull(GraphQLString))
                                 .build()
                         )
-                        .dataFetcher(env -> findPersonByFirstName(env.getArgument("fn")))
+                        .dataFetcher(env -> personRepository.findPersonByFirstName(env.getArgument("fn")))
                         .build()
-                )
-        .build();
-
-        return newSchema().query(queryRoot).build();
-
+                    )
+                .build();
     }
 
-    private static Person findPersonByFirstName(Object firstName) {
-        String param = (String) firstName;
-        Optional<Person> personOptional = personList.stream().filter(person -> person.getFirstName().toLowerCase().equals(param.toLowerCase())).findFirst();
-        return personOptional.get();
-    }
 
-    private static final GraphQLObjectType ADDRESS_TYPE = newObject()
+    private static final GraphQLObjectType ADDRESS_QUERY_TYPE = newObject()
             .name("Address")
             .field(newFieldDefinition()
                     .name("streetName")
-                    .type(new GraphQLNonNull(GraphQLString))
+                    .type(GraphQLString)
                     .build()
             )
             .field(newFieldDefinition()
                     .name("houseNumber")
-                    .type(new GraphQLNonNull(GraphQLLong))
+                    .type(GraphQLLong)
                     .build()
             )
             .field(newFieldDefinition()
                     .name("town")
-                    .type(new GraphQLNonNull(GraphQLString))
+                    .type(GraphQLString)
                     .build()
             )
             .build();
+
 
     private static final GraphQLObjectType PERSON_TYPE = newObject()
             .name("Person")
@@ -139,11 +103,88 @@ public class Schema {
                     .build()
             )
             .field(newFieldDefinition()
-                    .name("Address")
-                    .type(new GraphQLList(ADDRESS_TYPE))
+                    .name("addresses")
+                    .type(new GraphQLList(ADDRESS_QUERY_TYPE))
                     .build()
             )
             .build();
 
+    private GraphQLObjectType buildMutationRoot(){
+        return newObject()
+                .name("MutationType")
+                .field(newFieldDefinition()
+                        .name("person")
+                        .type(PERSON_TYPE)
+                        .argument(newArgument()
+                                .name("firstName")
+                                .type(new GraphQLNonNull(GraphQLString))
+                                .build()
+                        )
+                        .argument(newArgument()
+                                .name("lastName")
+                                .type(new GraphQLNonNull(GraphQLString))
+                                .build()
+                        )
+                        .argument(newArgument()
+                                .name("newAddresses")
+                                .type(new GraphQLList(ADDRESS_INPUT_TYPE))
+                                .build()
+                        )
+                        .dataFetcher(env -> {
+                            Map<String, Object> envMap = env.getArguments();
+                            return addPerson(envMap);
+                        })
+                        .build()
+                )
+                .build();
+    }
 
+    private static final GraphQLInputObjectType ADDRESS_INPUT_TYPE = newInputObject()
+            .name("newAddress")
+            .field(newInputObjectField()
+                    .name("streetName")
+                    .type(new GraphQLNonNull(GraphQLString))
+                    .build()
+            )
+            .field(newInputObjectField()
+                    .name("houseNumber")
+                    .type(new GraphQLNonNull(GraphQLLong))
+                    .build()
+            )
+            .field(newInputObjectField()
+                    .name("town")
+                    .type(new GraphQLNonNull(GraphQLString))
+                    .build()
+            )
+            .build();
+
+    /*
+    * Converter methods to fetch all the data out of the map
+    */
+    private Object addPerson(Map<String, Object> envMap) {
+        Person person = new Person();
+        person.setFirstName( (String) envMap.get("firstName"));
+        person.setLastName( (String) envMap.get("lastName"));
+        convertAddress(person,(ArrayList<Object>) envMap.get("newAddresses"));
+        personRepository.createPerson(person);
+        return person;
+    }
+
+    private void convertAddress(Person person, ArrayList<Object> newAddresses) {
+        final List<Address> addressList = new ArrayList<>();
+        newAddresses.forEach(entry -> {
+            LinkedHashMap<Object,Object> addressAttributes = (LinkedHashMap<Object,Object>) entry;
+            createAddress(addressList, addressAttributes);
+        });
+        person.setAddresses(addressList);
+
+    }
+
+    private void createAddress(List<Address> addressList, LinkedHashMap<Object,Object> addressAttributes) {
+        Address address = new Address();
+        address.setStreetName((String) addressAttributes.get("streetName"));
+        address.setHouseNumber((long) addressAttributes.get("houseNumber"));
+        address.setTown((String) addressAttributes.get("town"));
+        addressList.add(address);
+    }
 }
