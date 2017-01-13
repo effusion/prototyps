@@ -9,9 +9,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>spring-config</artifactId>
+    <artifactId>springconfig</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>client</module>
+        <module>server</module>
+    </modules>
 
-    <dependencies>
-        
-    </dependencies>
 </project>
