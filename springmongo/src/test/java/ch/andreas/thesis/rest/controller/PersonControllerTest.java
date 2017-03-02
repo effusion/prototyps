@@ -3,6 +3,7 @@ package ch.andreas.thesis.rest.controller;
 
 import ch.andreas.thesis.rest.json.PersonJson;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
@@ -17,7 +18,7 @@ public class PersonControllerTest {
     private RestTemplate restTemplate = new RestTemplate();
 
     @Test
-    //@Ignore("for int testing.")
+    @Ignore("for int testing.")
     public void createPerson() throws RestClientException{
         PersonJson personJson = new PersonJson("Andreas", "Heubeck", "Ackerstrasse",
                 44, "Zürich", 8005, "Schweiz");
